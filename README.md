@@ -12,15 +12,15 @@ The parameters were estimated with a Bayesian approach. Specifically, we used a 
 The simulation model was coded in the C programming language. Compilation of .c file requires "mtwister.h" header file, which contains Mersenne Twister pseudo-random number generator based on http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html. Once compiled, one can run the code with a generated executable file.
 
 The executable requires multiple CSV files:
-<li><p>(1) grid_info.csv, containing cell-wise information, and</p></li>
-<li><p>(2) adj_cid.csv, containing the cell ids of close cells, and</p></li>
-<li><p>(3) grid_xy.csv, contating the centroid coordinates for each cell, and</p></li>
-<li><p>(4) road_cross.csv, containing whether two cells are separated by roads, and</p></li>
-<li><p>(5) river_cross.csv, containing whether two cells are separated by rivers, and</p></li>
-<li><p>(6) SS_n.csv, containing the number of collected WB carcass samples from a given cell in a given week, and</p></li>
-<li><p>(7) SS_k.csv, containing the number of collected ASF (+) WB carcass samples from a given cell in a given week, and</p></li>
-<li><p>(8) SS_n_h.csv, containing the number of collected live WB samples from a given cell in a given week, and</p></li>
-<li><p>(9) SS_k_h.csv, containing the number of collected ASF (+) live WB samples from a given cell in a given week.</p></li>
+<ol> grid_info.csv, containing cell-wise information,</ol>
+<ol> adj_cid.csv, containing the cell ids of close cells,</ol>
+<ol> grid_xy.csv, contating the centroid coordinates for each cell,</ol>
+<ol> road_cross.csv, containing whether two cells are separated by roads,</ol>
+<ol> river_cross.csv, containing whether two cells are separated by rivers,</ol>
+<ol> SS_n.csv, containing the number of collected WB carcass samples from a given cell in a given week,</ol>
+<ol> SS_k.csv, containing the number of collected ASF (+) WB carcass samples from a given cell in a given week,</ol>
+<ol> SS_n_h.csv, containing the number of collected live WB samples from a given cell in a given week,</ol>
+<ol> SS_k_h.csv, containing the number of collected ASF (+) live WB samples from a given cell in a given week.</ol>
 
 <p>Among them, the files in (6) ~ (9) cannot be freely distributed due to the lack of authorisation.</p>
 <br/><br/>
