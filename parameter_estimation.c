@@ -104,7 +104,7 @@ char SS_n_h_file[]= "D:/ASF Kor/SS_n_h.csv";
 char SS_k_h_file[]= "D:/ASF Kor/SS_k_h.csv";
 char SS_grid_file[]= "D:/ASF Kor/SS_grid.csv";
 char road_cross_file[]= "D:/ASF Kor/road_cross.csv";
-char town_cross_file[]= "D:/ASF Kor/town_cross.csv";
+//char town_cross_file[]= "D:/ASF Kor/town_cross.csv";
 char river_cross_file[]= "D:/ASF Kor/river_cross.csv";
 char para_file[]= "D:/ASF Kor/Result_1.csv";
 
