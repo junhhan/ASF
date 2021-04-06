@@ -1,4 +1,4 @@
-# Estimation of parameters related to ASF spread in wild boars
+# Estimation of parameters related to African swine fever (ASF) spread in wild boars
 ### Introduction
 The purpose of the script is to explore the posterior distributions of ecological and epidemiological parameters, such as:
 <ol>(1) transmission rates for infectious live wild boars (WB) or WB carcasses, and</ol>
