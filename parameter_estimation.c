@@ -54,11 +54,11 @@
 #define max_dist 15.0
 #define max_reach 145
 #define n_particle 2
-#define n_chain 5000
+#define n_chain 10000
 #define n_parameter 7
 #define Old 0
 #define New 1
-#define spatial_lim 0.5
+#define spatial_lim 0.25
 
 #define fwk_1 5
 #define fwk_2 6
@@ -106,7 +106,7 @@ char SS_grid_file[]= "D:/ASF Kor/SS_grid.csv";
 char road_cross_file[]= "D:/ASF Kor/road_cross.csv";
 char town_cross_file[]= "D:/ASF Kor/town_cross.csv";
 char river_cross_file[]= "D:/ASF Kor/river_cross.csv";
-char para_file[]= "D:/ASF Kor/Result.csv";
+char para_file[]= "D:/ASF Kor/Result_1.csv";
 
 
 //---------------------------------------------------------------------------------------------------
@@ -256,27 +256,29 @@ int main(void) {
 	
 	// Set the initial values of the parameters
 
-	parameters[0][0]= 0.01;//0.01 : Beta_wb
-	parameters[0][1]= 0.01;//0.01 : Beta_car
-	parameters[0][2]= 0.5;//0.5 : alpha
+	parameters[0][0]= 0.05;//0.01 : Beta_wb
+	parameters[0][1]= 1.0;//0.01 : Beta_car
+	parameters[0][2]= 1.0;//0.5 : alpha
+	parameters[0][3]= 0.5;//0.1 : pi_between
+	parameters[0][4]= 0.5;//0.1 : p_road
+	parameters[0][5]= 0.5;//0.1 : p_river
+	parameters[0][6]= 0.5;//0.1 : p_fence
+/*
+	parameters[0][0]= 0.1;//0.01 : Beta_wb
+	parameters[0][1]= 1.0;//0.01 : Beta_car
+	parameters[0][2]= 0.75;//0.5 : alpha
 	parameters[0][3]= 0.1;//0.1 : pi_between
 	parameters[0][4]= 0.1;//0.1 : p_road
 	parameters[0][5]= 0.1;//0.1 : p_river
 	parameters[0][6]= 0.1;//0.1 : p_fence
-/*
-	parameters[0][0]= 0.1;//0.01 : Beta_wb
-	parameters[0][1]= 0.1;//0.01 : Beta_car
-	parameters[0][2]= 2.0;//0.5 : alpha
-	parameters[0][3]= 0.9;//0.1 : pi_between
-	parameters[0][4]= 0.9;//0.1 : p_road
-	parameters[0][5]= 0.9;//0.1 : p_river
-	parameters[0][6]= 0.9;//0.1 : p_fence
 */
 	// Start MH algorithm
+	int sid= -1;
 	for (l= 0; l < n_chain; ++l) {
 		for (m= 0; m < n_parameter; ++m) {
 			n= n_parameter * l + m + 1; // Number of row in the "parameters"
-
+			sid +=1;
+			
 			// Bring-up the previous parameter values
 			_parameters[Old][0]= parameters[n-1][0];
 			_parameters[Old][1]= parameters[n-1][1];
@@ -287,21 +289,22 @@ int main(void) {
 			_parameters[Old][6]= parameters[n-1][6];
 
 			// Propose a new parameter
+			srand(sid);
 			_Propose_parameters(_parameters, m);
-//			printf("%.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", _parameters[New][0], _parameters[New][1], _parameters[New][2], _parameters[New][3], _parameters[New][4], _parameters[New][5], _parameters[New][6]);
+			printf("%.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", _parameters[New][0], _parameters[New][1], _parameters[New][2], _parameters[New][3], _parameters[New][4], _parameters[New][5], _parameters[New][6]);
 		
 			#pragma omp parallel num_threads(n_particle)
 			{
 				int val= omp_get_thread_num();
 				double ll;
-				srand(n);
+				srand(sid);
 
 				// Mersenne Twister variables for each thread
 				int _MTcnt, *MTcnt; _MTcnt= 0; MTcnt= &_MTcnt;
 				int _MTleft, *MTleft; _MTleft= 1; MTleft= &_MTleft; 
 				int _MTinitf, *MTinitf; _MTinitf= 0; MTinitf= &_MTinitf;
 				unsigned long MTstate[MTn], MTnext[MTn];
-				_MTinit(MTstate, MTleft, MTinitf, n);
+				_MTinit(MTstate, MTleft, MTinitf, sid);
 
 				// Parameters
 				double *beta_wb;
@@ -322,20 +325,16 @@ int main(void) {
 				_p_town= 1.0;
 				p_town= &_p_town;
 
-//				printf("IDX %i: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", val, _parameters[val][0], _parameters[val][1], _parameters[val][2], _parameters[val][3], _parameters[val][4], _parameters[val][5], _parameters[val][6]);
 				ll= _Run_the_model(MTstate, MTnext, MTleft, MTcnt, 
 					grid_info, adj_cid, grid_xy, reach_cid, reach_dist, SS_n, SS_k, SS_n_h, SS_k_h, road_cross, town_cross, river_cross, beta_wb, beta_car, pi_between, p_road, p_town, p_river, p_fence, alpha);
-//				printf("IDX %i: %4.3f\n", val, ll);
 				loglikelihood[val]= ll;
 			}
-			printf("%4.3f, %4.3f\n", loglikelihood[0], loglikelihood[1]);
+			printf("%4.3f, %4.3f\n", loglikelihood[Old], loglikelihood[New]);
 
 			// Update the parameter to "parameters"
 			// Choose to select the proposed parameter = Posterior likelihood + Prior adjusting for the probability due to Hastings algorithm
 			prob= _Selection_prob(_parameters, loglikelihood, m);
-//			printf("%4.3f, %4.3f by %4.3f\n", loglikelihood[0], loglikelihood[1], prob);
-			//prob= exp(loglikelihood[New] - loglikelihood[Old] + log((1.0/_parameters[Old][m])*_PDF_normal(log(_parameters[Old][m]),_parameters[New][m])) - log((1.0/_parameters[New][m])*_PDF_normal(log(_parameters[New][m]),_parameters[Old][m])));
-			if ((double)rand()/(double)RAND_MAX < prob && loglikelihood[1] != 0.0) {
+			if ((double)rand()/(double)RAND_MAX < prob && loglikelihood[New] != -9999.0) {
 				// Keep the proposed parameter
 				parameters[n][0]= _parameters[New][0];
 				parameters[n][1]= _parameters[New][1];
@@ -356,7 +355,7 @@ int main(void) {
 				parameters[n][6]= _parameters[Old][6];
 				printf("Discard...\n");
 			}
-	
+
 			printf("%5i iterations is over.\n", n);
 		}
 	}
@@ -922,7 +921,6 @@ void _Simulation(unsigned long *MTstate, unsigned long *MTnext, int *MTleft, int
 	double adj_sounder, adj_car, pi;
 	double p_mort, p_move, p_repro, lambda;
 	int dM, dS, dE, dI, dR, dC;
-//	int safeguard= 0;
 
 	// Calendar week for simulation
 	int week;
@@ -1132,7 +1130,7 @@ void _Simulation(unsigned long *MTstate, unsigned long *MTnext, int *MTleft, int
 			k += 1;
 		}
 
-		lambda= 1.0 - exp(-1.0 * (((*beta_wb) * (double)inf_sounder) + ((*beta_wb) * (*pi_between) * adj_sounder) + ((*beta_car) * (double)inf_car) + ((*beta_car) * (*pi_between) * adj_car)));
+		lambda= 1.0 - exp(-1.0 * (((*beta_wb) * (double)inf_sounder) + ((*beta_wb) * (*pi_between) * adj_sounder) + ((*beta_wb) * (*beta_car) * (double)inf_car) + ((*beta_wb) * (*beta_car) * (*pi_between) * adj_car)));
 		
 		for (k= 0; k < g_demo; ++k) {
 			// M -> S
@@ -1160,11 +1158,6 @@ void _Simulation(unsigned long *MTstate, unsigned long *MTnext, int *MTleft, int
 		// Add the likelihood
 		_LL_estimation(n_wb_tmp, carcass_tmp, SS_n, SS_k, SS_n_h, SS_k_h, week_cont, j, log_lik);
 	} // END For each cell in the grid
-
-	// Null the log likelihood if there is no infectious animal at the end week of simulation
-//	if (week_cont == w_SS - 1 && safeguard <= 25) {
-//		(*log_lik)= 0.0;
-//	}
 
 	// Update the WB population and carcasses
 	for (j= 0; j < n_grid; ++j) {
@@ -1197,10 +1190,16 @@ void _LL_estimation(int **n_wb, int **carcass, int **SS_n, int **SS_k, int **SS_
 			val_d= 0.0;
 		}
 
+		if (val_d == 1.0) {
+			val_d= 0.9999;
+		} else if (val_d == 0.0) {
+			val_d= 0.0001;
+		}
+
 		if (val == 0) {
 //			printf("Warning. No carcasses, while the observation is opposite!! Sim= %3i, Obs= %3i, Pos= %3i\n", val, SS_n[j][k], SS_k[j][k]);
 		} else {
-			(*log_lik) += _Binomial_function(SS_k[j][k], SS_n[j][k], val_d);
+			(*log_lik) += log(_Binomial_function(SS_k[j][k], SS_n[j][k], val_d));
 		}
 	} else {
 //		printf("No carcasses reported in CID %3i at Week %3i\n", current_cid, week_cont);
@@ -1221,10 +1220,16 @@ void _LL_estimation(int **n_wb, int **carcass, int **SS_n, int **SS_k, int **SS_
 			val_d= 0.0;
 		}
 
+		if (val_d == 1.0) {
+			val_d= 0.9999;
+		} else if (val_d == 0.0) {
+			val_d= 0.0001;
+		}
+
 		if (val == 0) {
 //			printf("Warning. No carcasses, while the observation is opposite!! Sim= %3i, Obs= %3i, Pos= %3i\n", val, SS_n[j][k], SS_k[j][k]);
 		} else {
-			(*log_lik) += _Binomial_function(SS_k_h[j][k], SS_n_h[j][k], val_d);
+			(*log_lik) += log(_Binomial_function(SS_k_h[j][k], SS_n_h[j][k], val_d));
 		}
 	} else {
 //		printf("No carcasses reported in CID %3i at Week %3i\n", current_cid, week_cont);
@@ -1323,28 +1328,6 @@ double _Run_the_model(unsigned long MTstate[], unsigned long MTnext[], int *MTle
 */
 	}
 
-	// Safeguard
-/*
-	int j= 0, k= 0;
-	double val;
-	// Null the log likelihood if cells with ASF+ carcasses do not match with less than x% of observed 127 cells (habitats) where at least one ASF + carcass being reported during the simulation period
-	for (i= 0; i < n_grid; ++i) {
-		if (SS_grid[i][0] == 1) {
-			j +=1;
-			if (SS_grid[i][1] == 1) {
-				k +=1;
-			}
-		}
-	}
-	val= (double)k / (double)j;
-//	printf("%2.3f\n", val);
-	
-	if (val < spatial_lim) {
-		_log_lik= 0.0;
-	}
-*/
-
-
 	// Null the log likelihood if more than 50% of cells in the simulated area was infected
 	int j= 0;
 	double val;
@@ -1354,16 +1337,15 @@ double _Run_the_model(unsigned long MTstate[], unsigned long MTnext[], int *MTle
 		}
 	}
 	val= (double)j / (double)n_grid;
-//	printf("%2.3f\n", val);
+	printf("%2.3f\n", val);
 	
 	if (val > spatial_lim) {
-		_log_lik= 0.0;
+		_log_lik= -9999.0;
 	}
 
-	// Null the log likelihood if there was no simulated ASF + carcasses in any of the cells where three ASF + carcasses (i.e. eastmost, westmost, and farthest from the northern borderline) were observed
+	// Null the log likelihood if there was no simulated ASF + carcasses in the cells where the farthest ASF + carcasses from the border were observed
 	if (SS_grid[1032][1] != 1) {
-//	if (SS_grid[1032][1] != 1 || SS_grid[357][1] != 1 || SS_grid[1467][1] != 1) {
-		_log_lik= 0.0;
+		_log_lik= -9999.0;
 	}
 
 	// Free the memory
@@ -1398,32 +1380,31 @@ void _Propose_parameters(double **_parameters, int para_id) {
 	
 	i= para_id;
 	// Betas
-	if (i <= 1) {
-		sd= 2.0;
+	if (i == 0) {
+		sd= 0.5;
 		val= exp(_Random_normal_simple(log(_parameters[Old][i]), sd));
 		while (val > 1.0 || val < 0.0001) {
 			val= exp(_Random_normal_simple(log(_parameters[Old][i]), sd));
 		}
+	} else if (i == 1) {
+		sd= 0.1;
+		val= _Random_normal_simple(_parameters[Old][i], sd);
+		while (val > 1.0 || val < 0.001) {
+			val= _Random_normal_simple(_parameters[Old][i], sd);
+		}
 	// alpha
 	} else if (i == 2) {
-		sd= 0.5;
-//		sd= 2.0;
+		sd= 0.2;
 		val= _Random_normal_simple(_parameters[Old][i], sd);
-//		val= exp(_Random_normal(log(_parameters[Old][i]), sd));
 		while (val > 2.5 || val < 0.1) {
 			val= _Random_normal_simple(_parameters[Old][i], sd);
-//			val= exp(_Random_normal(log(_parameters[Old][i]), sd));
 		}
 	// pi_between, p_road, p_water, p_fence
 	} else {
-		sd= 0.25;
-//		sd= 2.0;
+		sd= 0.1;
 		val= _Random_normal_simple(_parameters[Old][i], sd);
-//		val= exp(_Random_normal(log(_parameters[Old][i]), sd));
 		while (val > 0.999 || val < 0.001) {
-//		while (val > 0.99 || val < 0.01) {
 			val= _Random_normal_simple(_parameters[Old][i], sd);
-//			val= exp(_Random_normal(log(_parameters[Old][i]), sd));
 		}
 	}
 
@@ -1438,45 +1419,23 @@ double _Selection_prob(double **_parameters, double *loglikelihood, int para_id)
 	double sd, prob;
 
 	i= para_id;	
-	if (i <= 1) {
-		sd= 2.0;
-		prob= exp(loglikelihood[New] - loglikelihood[Old] + log((1.0/_parameters[Old][i])*_PDF_normal(log(_parameters[Old][i]),_parameters[New][i], sd)) - log((1.0/_parameters[New][i])*_PDF_normal(log(_parameters[New][i]),_parameters[Old][i], sd)));
-	} else if (i == 2) {
+	if (i == 0) {
 		sd= 0.5;
+		prob= exp(loglikelihood[New] - loglikelihood[Old] + log((1.0/_parameters[Old][i])*_PDF_normal(log(_parameters[Old][i]),_parameters[New][i], sd)) - log((1.0/_parameters[New][i])*_PDF_normal(log(_parameters[New][i]),_parameters[Old][i], sd)));
+	} else if (i == 1) {
+		sd= 0.1;
+		prob= exp(loglikelihood[New] - loglikelihood[Old] + log(_CDF_normal(1.0, _parameters[New][i], sd) - _CDF_normal(0.001, _parameters[New][i], sd)) - log(_CDF_normal(1.0, _parameters[Old][i], sd) - _CDF_normal(0.001, _parameters[Old][i], sd)));
+	} else if (i == 2) {
+		sd= 0.2;
 		prob= exp(loglikelihood[New] - loglikelihood[Old] + log(_CDF_normal(2.5, _parameters[New][i], sd) - _CDF_normal(0.1, _parameters[New][i], sd)) - log(_CDF_normal(2.5, _parameters[Old][i], sd) - _CDF_normal(0.1, _parameters[Old][i], sd)));
 	} else {
-		sd= 0.25;
+		sd= 0.1;
 		prob= exp(loglikelihood[New] - loglikelihood[Old] + log(_CDF_normal(0.999, _parameters[New][i], sd) - _CDF_normal(0.001, _parameters[New][i], sd)) - log(_CDF_normal(0.999, _parameters[Old][i], sd) - _CDF_normal(0.001, _parameters[Old][i], sd)));
 	}
 	
 	return prob;
 }
 
-/*
-// Select the best particle index based on the summary statistics
-int _Best_particle(double *log_lik) {
-	int _Random_binomial(int n, double p);
-	
-	int i, j;
-	double tmp= log_lik[0];
-
-	i= 0;
-	for (j= 1; j < n_particle; ++j) {
-		if (log_lik[j] >= tmp) {
-			if (log_lik[j] == tmp) {
-				if (_Random_binomial(1, 0.5) == 1) {
-					tmp= log_lik[j];
-					i= j;
-				}
-			} else {
-				tmp= log_lik[j];
-				i= j;
-			} 
-		}
-	}
-	return i;
-}
-*/
 // Read cell id NA status
 void _Read_grid_info(char file_name[], int **grid_info) {
 	FILE *_file= fopen(file_name, "r");	
