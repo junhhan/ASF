@@ -1,8 +1,8 @@
 # Estimation of parameters related to ASF spread in wild boars
 ### Introduction
 The purpose of the script is to explore the posterior distributions of ecological and epidemiological parameters, such as:
-<li><p>(1) transmission rates for infectious live wild boars (WB) or WB carcasses, and</p></li>
-<li><p>(2) efficiency of roads, rivers, and fences to preventing the spread of ASF,</p></li>
+<li> transmission rates for infectious live wild boars (WB) or WB carcasses, and</li>
+<li> efficiency of roads, rivers, and fences to preventing the spread of ASF,</li>
 <p>in the WB population of Gyeonggi and Gangwon provinces, South Korea.</p>
 
 The parameters were estimated with a Bayesian approach. Specifically, we used a Markov Chain Monte Carlo (MCMC)\
