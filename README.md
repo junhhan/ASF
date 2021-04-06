@@ -3,7 +3,7 @@
 The purpose of the script is to explore the posterior distributions of ecological and epidemiological parameters, such as:
 <li> transmission rates for infectious live wild boars (WB) or WB carcasses, and</li>
 <li> efficiency of roads, rivers, and fences to preventing the spread of ASF,</li>
-<p>in the WB population of Gyeonggi and Gangwon provinces, South Korea.</p>
+in the WB population of Gyeonggi and Gangwon provinces, South Korea.
 
 The parameters were estimated with a Bayesian approach. Specifically, we used a Markov Chain Monte Carlo (MCMC)\
 method with a Metropolis-Hastings (MH) algorithm.
