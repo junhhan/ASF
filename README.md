@@ -20,7 +20,9 @@ The executable requires multiple CSV files:
 <ol> (6) SS_n.csv, containing the number of collected WB carcass samples from a given cell in a given week,</ol>
 <ol> (7) SS_k.csv, containing the number of collected ASF (+) WB carcass samples from a given cell in a given week,</ol>
 <ol> (8) SS_n_h.csv, containing the number of collected live WB samples from a given cell in a given week,</ol>
-<ol> (9) SS_k_h.csv, containing the number of collected ASF (+) live WB samples from a given cell in a given week.</ol>
+<ol> (9) SS_k_h.csv, containing the number of collected ASF (+) live WB samples from a given cell in a given week,</ol>
+<ol> (10) n_wbs.csv, containing the number of WBs and carcasses in each cell,</ol>
+<ol> (11) SS_grid.csv, containing whether a cell had ASF (+) WB samples.</ol>
 Among them, the files in (6) ~ (9) cannot be freely distributed due to the lack of authorisation.
 <br/><br/>
 
