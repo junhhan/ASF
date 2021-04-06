@@ -5,14 +5,11 @@ The purpose of the script is to explore the posterior distributions of ecologica
 <li> efficiency of roads, rivers, and fences to preventing the spread of ASF,</li>
 in the WB population of Gyeonggi and Gangwon provinces, South Korea.
 
-The parameters were estimated with a Bayesian approach. Specifically, we used a Markov Chain Monte Carlo (MCMC)\
-method with a Metropolis-Hastings (MH) algorithm.
+The parameters were estimated with a Bayesian approach. Specifically, we used a Markov Chain Monte Carlo (MCMC) method with a Metropolis-Hastings (MH) algorithm.
 <br/><br/>
 
 ### How to run
-The simulation model was coded in the C programming language. Compilation of .c file requires "mtwister.h" header file,\
-which contains Mersenne Twister pseudo-random number generator based on http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html.
-Once compiled, one can run the code with a generated executable file.
+The simulation model was coded in the C programming language. Compilation of .c file requires "mtwister.h" header file, which contains Mersenne Twister pseudo-random number generator based on http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html. Once compiled, one can run the code with a generated executable file.
 
 The executable requires multiple CSV files:
 <li><p>(1) grid_info.csv, containing cell-wise information, and</p></li>
